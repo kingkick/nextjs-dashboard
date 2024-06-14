@@ -1,3 +1,4 @@
+'use client';
 import { CustomerField } from '@/app/lib/definitions';
 import Link from 'next/link';
 import {
@@ -7,10 +8,17 @@ import {
   UserCircleIcon,
 } from '@heroicons/react/24/outline';
 import { Button } from '@/app/ui/button';
+import { createInvoice } from '@/app/lib/actions';
+import { useFormState } from 'react-dom';
 
 export default function Form({ customers }: { customers: CustomerField[] }) {
+  // initialState 可以是您定义的任何内容，在这个案例中，创建一个带有两个空 key（message 和 errors）的对象。
+  const initialState = { message: null, error: {} };
+  const [state, dispatch] = useFormState(createInvoice, initialState);
+  console.log('state ->', state);
+
   return (
-    <form>
+    <form action={dispatch}>
       <div className="rounded-md bg-gray-50 p-4 md:p-6">
         {/* Customer Name */}
         <div className="mb-4">
@@ -18,11 +26,15 @@ export default function Form({ customers }: { customers: CustomerField[] }) {
             Choose customer
           </label>
           <div className="relative">
+            {/* aria-describedby="customer-error"：这在 select 元素和错误消息容器之间建立了关系。它表示具有 id="customer-error" 的容器描述了 select 元素。屏幕阅读器在用户与选择框交互时将阅读此描述，以通知他们存在错误。
+                id="customer-error"：此 id 属性唯一标识包含 select 输入错误消息的 HTML 元素。这对于 aria-describedby 建立关系是必要的。
+                aria-live="polite"：屏幕阅读器应在 div 内的错误更新时礼貌地通知用户。当内容发生更改时（例如，用户更正错误），屏幕阅读器将在用户处于空闲状态时宣布这些更改，以免打断他们。*/}
             <select
               id="customer"
               name="customerId"
               className="peer block w-full cursor-pointer rounded-md border border-gray-200 py-2 pl-10 text-sm outline-2 placeholder:text-gray-500"
               defaultValue=""
+              aria-describedby="customer-error"
             >
               <option value="" disabled>
                 Select a customer
@@ -34,6 +46,14 @@ export default function Form({ customers }: { customers: CustomerField[] }) {
               ))}
             </select>
             <UserCircleIcon className="pointer-events-none absolute left-3 top-1/2 h-[18px] w-[18px] -translate-y-1/2 text-gray-500" />
+          </div>
+          <div id="customer-error" aria-live="polite" aria-atomic="true">
+            {state.errors?.customerId &&
+              state.errors.customerId.map((error: string) => (
+                <p className="mt-2 text-sm text-red-500" key={error}>
+                  {error}
+                </p>
+              ))}
           </div>
         </div>
 
@@ -51,9 +71,19 @@ export default function Form({ customers }: { customers: CustomerField[] }) {
                 step="0.01"
                 placeholder="Enter USD amount"
                 className="peer block w-full rounded-md border border-gray-200 py-2 pl-10 text-sm outline-2 placeholder:text-gray-500"
+                // required
+                aria-describedby="customer-error2"
               />
               <CurrencyDollarIcon className="pointer-events-none absolute left-3 top-1/2 h-[18px] w-[18px] -translate-y-1/2 text-gray-500 peer-focus:text-gray-900" />
             </div>
+          </div>
+          <div id="customer-error2" aria-live="polite" aria-atomic="true">
+            {state.errors?.amount &&
+              state.errors.amount.map((error: string) => (
+                <p className="mt-2 text-sm text-red-500" key={error}>
+                  {error}
+                </p>
+              ))}
           </div>
         </div>
 
@@ -63,7 +93,7 @@ export default function Form({ customers }: { customers: CustomerField[] }) {
             Set the invoice status
           </legend>
           <div className="rounded-md border border-gray-200 bg-white px-[14px] py-3">
-            <div className="flex gap-4">
+            <div className="flex gap-4" aria-describedby="customer-error3">
               <div className="flex items-center">
                 <input
                   id="pending"
@@ -94,6 +124,14 @@ export default function Form({ customers }: { customers: CustomerField[] }) {
                   Paid <CheckIcon className="h-4 w-4" />
                 </label>
               </div>
+            </div>
+            <div id="customer-error3" aria-live="polite" aria-atomic="true">
+              {state.errors?.status &&
+                state.errors.status.map((error: string) => (
+                  <p className="mt-2 text-sm text-red-500" key={error}>
+                    {error}
+                  </p>
+                ))}
             </div>
           </div>
         </fieldset>

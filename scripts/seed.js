@@ -25,6 +25,8 @@ async function seedUsers(client) {
     // Insert data into the "users" table
     const insertedUsers = await Promise.all(
       users.map(async (user) => {
+        // 使用了一个名为 bcrypt 的包来哈希用户的密码，然后将其存储在数据库中。在后面，将再次使用它来比较用户输入的密码是否与数据库中的密码匹配。
+        // 但是需要为 bcrypt 包创建一个单独的文件。这是因为 bcrypt 依赖于 Next.js 中间件中不可用的 Node.js API。
         const hashedPassword = await bcrypt.hash(user.password, 10);
         return client.sql`
         INSERT INTO users (id, name, email, password)
